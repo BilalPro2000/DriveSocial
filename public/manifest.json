@@ -1,0 +1,25 @@
+{
+  "name": "Drive Social",
+  "short_name": "Drive Social",
+  "description": "All-in-one social driving telemetry, squad management, and real-time convoy tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0F17",
+  "theme_color": "#0B0F17",
+  "categories": ["navigation", "sports", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

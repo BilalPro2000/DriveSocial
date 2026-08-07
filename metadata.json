@@ -1,0 +1,6 @@
+{
+  "name": "Drive Social",
+  "description": "All-in-one social driving telemetry, vehicle management, and real-time convoy tracking app.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
