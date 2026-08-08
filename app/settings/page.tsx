@@ -119,7 +119,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-full bg-[#0B0F17] text-white p-4 pb-24 max-w-xl mx-auto space-y-6">
+    <div className="min-h-full text-white p-4 pb-24 max-w-xl mx-auto space-y-6 pointer-events-auto">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-white/10">
         <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">

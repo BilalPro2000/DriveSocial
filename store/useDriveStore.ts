@@ -36,11 +36,19 @@ interface DriveState {
   telemetry: TelemetryData;
   mapSettings: MapSettings;
   waypoints: Waypoint[];
+  mapViewState: {
+    longitude: number;
+    latitude: number;
+    zoom: number;
+    pitch: number;
+    bearing: number;
+  };
   startDrive: (mode?: DriveMode) => void;
   finishDrive: () => void;
   updateTelemetry: (data: Partial<TelemetryData>) => void;
   addRouteCoord: (coord: [number, number]) => void;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
+  setMapViewState: (viewState: Partial<{ longitude: number; latitude: number; zoom: number; pitch: number; bearing: number }>) => void;
   addWaypoint: (wp: Waypoint) => void;
   removeWaypoint: (id: string) => void;
   setDriveMode: (mode: DriveMode) => void;
@@ -68,6 +76,13 @@ export const useDriveStore = create<DriveState>((set) => ({
     orientation: 'heading',
   },
   waypoints: [],
+  mapViewState: {
+    longitude: -122.4194,
+    latitude: 37.7749,
+    zoom: 14,
+    pitch: 0,
+    bearing: 0,
+  },
   startDrive: (mode) =>
     set({
       isActive: true,
@@ -93,6 +108,8 @@ export const useDriveStore = create<DriveState>((set) => ({
     })),
   updateMapSettings: (settings) =>
     set((state) => ({ mapSettings: { ...state.mapSettings, ...settings } })),
+  setMapViewState: (viewState) =>
+    set((state) => ({ mapViewState: { ...state.mapViewState, ...viewState } })),
   addWaypoint: (wp) =>
     set((state) => ({ waypoints: [...state.waypoints, wp] })),
   removeWaypoint: (id) =>

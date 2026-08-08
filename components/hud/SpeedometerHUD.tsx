@@ -52,7 +52,7 @@ export function SpeedometerHUD({ isExpanded = true }: SpeedometerHUDProps) {
         initial={{ y: 200, opacity: 0 }}
         animate={{ y: isExpanded ? 0 : 'calc(100% - 100px)', opacity: 1 }}
         exit={{ y: 200, opacity: 0 }}
-        className="w-full bg-[#0B0F17]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl p-6 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col items-center"
+        className="w-[calc(100%-2rem)] mx-auto mb-20 md:mb-4 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 pb-6 shadow-lg flex flex-col items-center"
       >
         {/* Top Controls */}
         <div className={`w-full flex items-center justify-between mb-4 ${!isExpanded ? 'hidden' : ''}`}>

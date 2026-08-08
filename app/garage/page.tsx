@@ -138,7 +138,7 @@ export default function GaragePage() {
   };
 
   return (
-    <div className="min-h-full bg-[#0B0F17] text-white p-4 pb-24 max-w-xl mx-auto space-y-4">
+    <div className="min-h-full text-white p-4 pb-24 max-w-xl mx-auto space-y-4 pointer-events-auto">
       {/* Top Selector */}
       <div className="flex bg-white/5 border border-white/10 rounded-2xl p-1 backdrop-blur-xl">
         <button

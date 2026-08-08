@@ -125,7 +125,7 @@ export default function ConvoysPage() {
   };
 
   return (
-    <div className="min-h-full bg-[#0B0F17] text-white p-4 pb-24 max-w-xl mx-auto flex flex-col gap-4">
+    <div className="min-h-full text-white p-4 pb-24 max-w-xl mx-auto flex flex-col gap-4 pointer-events-auto">
       {/* Top Squad Selector Header */}
       <div className="flex items-center justify-between gap-2 bg-white/5 border border-white/10 rounded-2xl p-2 backdrop-blur-xl">
         <select
