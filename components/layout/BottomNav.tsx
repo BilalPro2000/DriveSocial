@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Navigation, Users, Map, Car, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDriveStore } from '@/store/useDriveStore';
+import { triggerHaptic } from '@/lib/haptics';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -22,7 +23,7 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-[#0B0F17]/90 backdrop-blur-xl border-t border-white/10">
+    <nav className="fixed bottom-0 left-0 z-[100] w-full h-16 bg-[#0B0F17]/95 backdrop-blur-xl border-t border-white/10 pointer-events-auto select-none" style={{ touchAction: 'manipulation' }}>
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
         {tabs.map((tab) => {
           const active = pathname === tab.href;
@@ -31,17 +32,19 @@ export function BottomNav() {
             <Link
               key={tab.name}
               href={tab.href}
+              onClick={() => triggerHaptic(10)}
               className={cn(
-                'inline-flex flex-col items-center justify-center px-5 hover:bg-white/5 transition-colors group',
+                'inline-flex flex-col items-center justify-center px-1 py-1 hover:bg-white/5 active:scale-95 transition-all cursor-pointer group touch-manipulation',
                 active ? 'text-[#FF3B30]' : 'text-gray-400 hover:text-white'
               )}
             >
-              <Icon className={cn("w-6 h-6 mb-1", active ? "stroke-[2.5px]" : "stroke-2")} />
-              <span className="text-[10px] uppercase tracking-wider">{tab.name}</span>
+              <Icon className={cn("w-5 h-5 mb-0.5", active ? "stroke-[2.5px]" : "stroke-2")} />
+              <span className="text-[10px] uppercase tracking-wider font-bold leading-none">{tab.name}</span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
+

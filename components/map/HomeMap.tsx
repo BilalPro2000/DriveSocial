@@ -13,6 +13,7 @@ import { triggerHaptic } from '@/lib/haptics';
 import { EmergencyDrawer } from '@/components/hud/EmergencyDrawer';
 import { MediaPlayerWidget } from '@/components/hud/MediaPlayerWidget';
 import { QuickActionsFAB } from '@/components/hud/QuickActionsFAB';
+import { useToastStore } from '@/store/useToastStore';
 
 export function HomeMap() {
   useTelemetry();
@@ -57,8 +58,29 @@ export function HomeMap() {
             className="absolute top-0 left-0 w-full p-4 z-10 flex flex-col gap-3 pointer-events-auto"
           >
             <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 h-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/10 px-4 flex items-center text-gray-300 shadow-lg">
+              <div className="flex-1 h-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/10 px-4 flex items-center justify-between text-gray-300 shadow-lg">
                 <span className="text-sm font-medium">Where to drive?</span>
+                {telemetry.accuracy !== null && (
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerHaptic(10);
+                      if (telemetry.isLowAccuracy) {
+                        useToastStore.getState().addToast('Low GPS accuracy — enable Precise Location in device settings.', 'warning');
+                      } else {
+                        useToastStore.getState().addToast(`High precision GPS active (±${telemetry.accuracy}m)`, 'success');
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border backdrop-blur-md flex items-center gap-1.5 cursor-pointer transition-all ${
+                      telemetry.isLowAccuracy 
+                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' 
+                        : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${telemetry.isLowAccuracy ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+                    {telemetry.isLowAccuracy ? 'Low GPS' : `±${telemetry.accuracy}m`}
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => {
@@ -153,7 +175,7 @@ export function HomeMap() {
               </button>
             </motion.div>
           ) : (
-            <SpeedometerHUD key="hud" isExpanded={hudExpanded} />
+            <SpeedometerHUD key="hud" isExpanded={hudExpanded} onToggleExpand={() => setHudExpanded(!hudExpanded)} />
           )}
         </AnimatePresence>
       </div>

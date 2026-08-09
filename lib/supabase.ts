@@ -2,18 +2,26 @@ import { createClient } from '@supabase/supabase-js';
 import * as localStorageLib from './storage';
 import { UserProfile, Vehicle, DriveRecord, Squad, SquadMessage } from './mockData';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null as any;
 
 /**
  * Checks if the app is currently running in local mock mode.
  * Set NEXT_PUBLIC_USE_MOCK_DATA="false" in environment variables to switch to live Supabase queries.
  */
 export function isMockMode(): boolean {
-  return process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
+  return process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false' || !supabaseUrl || !supabaseKey;
+}
+
+// Authentication Check Helper
+async function checkAuth() {
+  if (isMockMode()) return true;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Unauthorized');
+  return true;
 }
 
 // ==========================================

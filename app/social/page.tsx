@@ -202,6 +202,7 @@ export default function SocialPage() {
                 {/* User Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={drive.user_avatar}
                       alt={drive.user_name}
@@ -361,6 +362,7 @@ export default function SocialPage() {
                     <span className={`w-6 text-center text-base font-black ${badgeColor}`}>
                       {rank <= 3 ? <Award className={`w-5 h-5 mx-auto ${badgeColor}`} /> : `#${rank}`}
                     </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={drive.user_avatar}
                       alt={drive.user_name}
@@ -394,12 +396,16 @@ export default function SocialPage() {
       {/* COMMENTS DRAWER MODAL */}
       <AnimatePresence>
         {selectedDriveForComments && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center">
+          <div 
+            onClick={() => setSelectedDriveForComments(null)}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center cursor-pointer"
+          >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               initial={{ y: 200, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 200, opacity: 0 }}
-              className="w-full max-w-xl bg-[#0B0F17] border-t border-white/10 rounded-t-3xl p-6 h-[70vh] flex flex-col justify-between"
+              className="w-full max-w-xl bg-[#0B0F17] border-t border-white/10 rounded-t-3xl p-6 h-[70vh] flex flex-col justify-between cursor-default"
             >
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
@@ -420,6 +426,7 @@ export default function SocialPage() {
                   ) : (
                     (commentsMap[selectedDriveForComments.id] || []).map((c) => (
                       <div key={c.id} className="flex gap-3 items-start">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={c.avatar} alt={c.user} className="w-8 h-8 rounded-full object-cover border border-white/10" />
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex-1">
                           <div className="flex justify-between items-center mb-1">

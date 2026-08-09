@@ -49,7 +49,7 @@ export function QuickActionsFAB({ onToggleHUD, isHUDExpanded }: QuickActionsFABP
   ];
 
   return (
-    <div className="absolute right-4 bottom-32 md:bottom-24 z-40 flex flex-col items-end gap-3">
+    <div className="absolute right-4 bottom-20 z-40 flex flex-col items-end gap-3 pointer-events-auto">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -68,7 +68,7 @@ export function QuickActionsFAB({ onToggleHUD, isHUDExpanded }: QuickActionsFABP
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => handleAction(action.id)}
-                  className="flex items-center gap-3 group"
+                  className="flex items-center gap-3 group active:scale-95 transition-all cursor-pointer"
                 >
                   <span className="bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
                     {action.label}
@@ -85,7 +85,7 @@ export function QuickActionsFAB({ onToggleHUD, isHUDExpanded }: QuickActionsFABP
 
       <button
         onClick={toggleOpen}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-black/40 transition-all z-50 ${
+        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-black/40 active:scale-95 transition-all cursor-pointer z-50 ${
           isOpen ? 'bg-white text-black rotate-45' : 'bg-[#121824] border border-white/10 text-white hover:bg-white/10'
         }`}
       >

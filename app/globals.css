@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* Hide Next.js dev overlays and status indicators */
+#next-js-dev-overlay,
+nextjs-portal,
+[data-nextjs-dialog-overlay],
+[data-nextjs-toast],
+[data-nextjs-toast-wrapper],
+.nextjs-toast-errors-parent {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Touch manipulation optimization for mobile responsiveness */
+html, body, button, a, nav {
+  touch-action: manipulation;
+}

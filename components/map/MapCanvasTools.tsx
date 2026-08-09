@@ -112,13 +112,13 @@ export function MapCanvasTools({ onRecenter, onOpenSettings }: MapCanvasToolsPro
         )}
       </AnimatePresence>
 
-      <div className="absolute right-4 bottom-32 flex flex-col gap-3 z-10">
+      <div className={`absolute right-4 flex flex-col gap-3 z-30 pointer-events-auto transition-all ${isActive ? 'top-20' : 'bottom-28'}`}>
         <button
           onClick={() => {
             triggerHaptic(15);
             onOpenSettings();
           }}
-          className="w-12 h-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors shadow-lg"
+          className="w-12 h-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer shadow-lg"
           title="Map Settings"
         >
           <Layers className="w-5 h-5" />
@@ -130,7 +130,7 @@ export function MapCanvasTools({ onRecenter, onOpenSettings }: MapCanvasToolsPro
               triggerHaptic([15, 25]);
               setShowPingMenu(true);
             }}
-            className="w-12 h-12 bg-amber-500/20 backdrop-blur-md rounded-2xl border border-amber-500/50 flex items-center justify-center text-amber-500 hover:bg-amber-500/30 transition-colors shadow-lg"
+            className="w-12 h-12 bg-amber-500/20 backdrop-blur-md rounded-2xl border border-amber-500/50 flex items-center justify-center text-amber-500 hover:bg-amber-500/30 active:scale-95 transition-all cursor-pointer shadow-lg"
             title="Drop Ping"
           >
             <Plus className="w-6 h-6" />
@@ -142,7 +142,7 @@ export function MapCanvasTools({ onRecenter, onOpenSettings }: MapCanvasToolsPro
             triggerHaptic(15);
             onRecenter();
           }}
-          className="w-12 h-12 bg-blue-600/20 backdrop-blur-md rounded-2xl border border-blue-500/50 flex items-center justify-center text-blue-500 hover:bg-blue-600/30 transition-colors shadow-lg"
+          className="w-12 h-12 bg-blue-600/20 backdrop-blur-md rounded-2xl border border-blue-500/50 flex items-center justify-center text-blue-500 hover:bg-blue-600/30 active:scale-95 transition-all cursor-pointer shadow-lg"
           title="Recenter Map"
         >
           <Crosshair className="w-5 h-5" />

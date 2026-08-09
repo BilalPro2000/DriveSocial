@@ -136,6 +136,7 @@ export default function SettingsPage() {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={profile.avatar_url}
               alt={profile.display_name}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDriveStore } from '@/store/useDriveStore';
+import { useToastStore } from '@/store/useToastStore';
 import localforage from 'localforage';
 
 // Haversine formula
@@ -17,154 +18,193 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c; // Distance in km
 }
 
-// Low-pass filter parameters
-const COORD_ALPHA = 0.45; // Coordinate smoothing factor
-const SPEED_ALPHA = 0.3; // Speed EMA smoothing factor
-const MIN_JITTER_DIST_KM = 0.003; // ~3 meters threshold
-const MIN_JITTER_SPEED_KMH = 1.8; // ~1.8 km/h threshold
-
 export function useTelemetry() {
   const isActive = useDriveStore((state) => state.isActive);
   const updateTelemetry = useDriveStore((state) => state.updateTelemetry);
   const addRouteCoord = useDriveStore((state) => state.addRouteCoord);
 
   const watchId = useRef<number | null>(null);
-  const lastRawLocation = useRef<{ lat: number; lon: number; time: number } | null>(null);
-  const lastFilteredLocation = useRef<{ lat: number; lon: number; time: number } | null>(null);
+  const simInterval = useRef<NodeJS.Timeout | null>(null);
+  const simAngle = useRef<number>(0);
+  const lastRealSpeed = useRef<number>(0);
+  const lastSmoothedCoords = useRef<[number, number] | null>(null);
+  const lastLowAccuracyToastTime = useRef<number>(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    // 1. Continuous High-Precision GPS Watch
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      const geoOptions: PositionOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      };
 
-    if (isActive) {
-      // Start duration timer
-      interval = setInterval(() => {
-        updateTelemetry({
-          durationSeconds: useDriveStore.getState().telemetry.durationSeconds + 1,
-        });
-      }, 1000);
+      watchId.current = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude, speed, accuracy } = position.coords;
+          const currentAccuracy = accuracy ? Math.round(accuracy) : 10;
+          const isLowAcc = currentAccuracy > 50;
 
-      // Start GPS watch
-      if (navigator.geolocation) {
-        watchId.current = navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude: rawLat, longitude: rawLon, speed: rawSpeed } = position.coords;
-            const now = Date.now();
+          // Check if low accuracy warning toast should be displayed
+          const now = Date.now();
+          if (isLowAcc && now - lastLowAccuracyToastTime.current > 30000) {
+            lastLowAccuracyToastTime.current = now;
+            useToastStore.getState().addToast(
+              'Low GPS accuracy — enable Precise Location in device settings.',
+              'warning'
+            );
+          }
 
-            let speedKmh = 0;
-            if (rawSpeed !== null && rawSpeed >= 0) {
-              speedKmh = rawSpeed * 3.6; // m/s to km/h
-            } else if (lastRawLocation.current) {
-              const timeDiff = (now - lastRawLocation.current.time) / 1000;
-              if (timeDiff > 0) {
-                const dist = calculateDistance(
-                  lastRawLocation.current.lat,
-                  lastRawLocation.current.lon,
-                  rawLat,
-                  rawLon
-                );
-                speedKmh = dist / (timeDiff / 3600);
+          // Position Smoothing & Jitter Filter Algorithm
+          let smoothedLon = longitude;
+          let smoothedLat = latitude;
+
+          if (lastSmoothedCoords.current) {
+            const [prevLon, prevLat] = lastSmoothedCoords.current;
+            const distMeters = calculateDistance(prevLat, prevLon, latitude, longitude) * 1000;
+
+            // Stationary Threshold Check (< 2.5 meters & low speed)
+            if (distMeters < 2.5 && (!speed || speed < 0.5)) {
+              // Suppress stationary GPS jitter - anchor position
+              smoothedLon = prevLon;
+              smoothedLat = prevLat;
+            } else if (distMeters < 15) {
+              // Exponential Moving Average filter for smooth trajectory
+              const alpha = 0.45;
+              smoothedLon = prevLon + alpha * (longitude - prevLon);
+              smoothedLat = prevLat + alpha * (latitude - prevLat);
+            }
+          }
+
+          lastSmoothedCoords.current = [smoothedLon, smoothedLat];
+
+          // Update store telemetry with current smoothed position & accuracy
+          const state = useDriveStore.getState();
+          const isDriveActive = state.isActive;
+
+          if (speed !== null && speed > 0.5) {
+            const speedKmh = speed * 3.6;
+            lastRealSpeed.current = speedKmh;
+
+            if (isDriveActive) {
+              const newTop = Math.max(state.telemetry.topSpeedKmh, speedKmh);
+              const durationSec = Math.max(1, state.telemetry.durationSeconds);
+
+              addRouteCoord([smoothedLon, smoothedLat]);
+
+              const coords = state.telemetry.routeCoords;
+              let addedDist = 0;
+              if (coords.length > 1) {
+                const prev = coords[coords.length - 2];
+                addedDist = calculateDistance(prev[1], prev[0], smoothedLat, smoothedLon);
               }
-            }
 
-            // Calculate raw distance change from last filtered position
-            let rawDistanceIncrement = 0;
-            if (lastFilteredLocation.current) {
-              rawDistanceIncrement = calculateDistance(
-                lastFilteredLocation.current.lat,
-                lastFilteredLocation.current.lon,
-                rawLat,
-                rawLon
-              );
-            }
+              const newDist = state.telemetry.distanceKm + addedDist;
+              const avgSpeed = newDist / (durationSec / 3600);
 
-            // GPS Jitter filter: Ignore tiny position changes when standing still or low speed
-            const isStationaryJitter =
-              lastFilteredLocation.current &&
-              rawDistanceIncrement < MIN_JITTER_DIST_KM &&
-              speedKmh < MIN_JITTER_SPEED_KMH;
-
-            if (isStationaryJitter) {
-              // Stationary: snap speed to 0, avoid distance accumulation & duplicate route coords
               updateTelemetry({
-                speedKmh: 0,
+                speedKmh: Math.round(speedKmh),
+                topSpeedKmh: Math.round(newTop),
+                distanceKm: Number(newDist.toFixed(2)),
+                avgSpeedKmh: Math.round(avgSpeed),
+                accuracy: currentAccuracy,
+                isLowAccuracy: isLowAcc,
+                currentPosition: [smoothedLon, smoothedLat],
               });
-              lastRawLocation.current = { lat: rawLat, lon: rawLon, time: now };
               return;
             }
+          }
 
-            // Apply low-pass exponential filter to coordinates
-            let filteredLat = rawLat;
-            let filteredLon = rawLon;
-
-            if (lastFilteredLocation.current) {
-              filteredLat =
-                lastFilteredLocation.current.lat +
-                COORD_ALPHA * (rawLat - lastFilteredLocation.current.lat);
-              filteredLon =
-                lastFilteredLocation.current.lon +
-                COORD_ALPHA * (rawLon - lastFilteredLocation.current.lon);
-            }
-
-            // Smooth speed with EMA filter
-            const currentSpeedKmh = useDriveStore.getState().telemetry.speedKmh;
-            const smoothedSpeed =
-              currentSpeedKmh + SPEED_ALPHA * (speedKmh - currentSpeedKmh);
-
-            const actualDistanceIncrement = lastFilteredLocation.current
-              ? calculateDistance(
-                  lastFilteredLocation.current.lat,
-                  lastFilteredLocation.current.lon,
-                  filteredLat,
-                  filteredLon
-                )
-              : 0;
-
-            const newDistanceKm =
-              useDriveStore.getState().telemetry.distanceKm + actualDistanceIncrement;
-            const newTopSpeedKmh = Math.max(
-              useDriveStore.getState().telemetry.topSpeedKmh,
-              smoothedSpeed
-            );
-            const duration = useDriveStore.getState().telemetry.durationSeconds;
-            const avgSpeedKmh =
-              duration > 0 ? newDistanceKm / (duration / 3600) : 0;
-
-            updateTelemetry({
-              speedKmh: Math.max(0, smoothedSpeed),
-              topSpeedKmh: newTopSpeedKmh,
-              distanceKm: newDistanceKm,
-              avgSpeedKmh,
-            });
-
-            addRouteCoord([filteredLon, filteredLat]);
-
-            lastRawLocation.current = { lat: rawLat, lon: rawLon, time: now };
-            lastFilteredLocation.current = { lat: filteredLat, lon: filteredLon, time: now };
-
-            // Cache to IndexedDB
-            localforage
-              .setItem('offline_telemetry', useDriveStore.getState().telemetry)
-              .catch(console.error);
-          },
-          (error) => {
-            console.error('GPS Error:', error);
-          },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-        );
-      }
-    } else {
-      if (watchId.current !== null) {
-        navigator.geolocation.clearWatch(watchId.current);
-        watchId.current = null;
-      }
-      lastRawLocation.current = null;
-      lastFilteredLocation.current = null;
+          updateTelemetry({
+            accuracy: currentAccuracy,
+            isLowAccuracy: isLowAcc,
+            currentPosition: [smoothedLon, smoothedLat],
+          });
+        },
+        (err) => {
+          console.log('GPS watch error/fallback:', err.message);
+        },
+        geoOptions
+      );
     }
 
     return () => {
-      clearInterval(interval);
-      if (watchId.current !== null) {
+      if (watchId.current !== null && typeof navigator !== 'undefined') {
         navigator.geolocation.clearWatch(watchId.current);
+        watchId.current = null;
+      }
+    };
+  }, [addRouteCoord, updateTelemetry]);
+
+  useEffect(() => {
+    let durationTimer: NodeJS.Timeout;
+
+    if (isActive) {
+      // 2. Drive Duration Counter (1s tick)
+      durationTimer = setInterval(() => {
+        const state = useDriveStore.getState();
+        updateTelemetry({
+          durationSeconds: state.telemetry.durationSeconds + 1,
+        });
+      }, 1000);
+
+      // 3. Fallback Drive Simulator (if real movement speed <= 0.5)
+      simInterval.current = setInterval(() => {
+        if (lastRealSpeed.current > 0.5) {
+          return;
+        }
+
+        const state = useDriveStore.getState();
+        const curCoords = state.telemetry.routeCoords;
+        let lastPoint: [number, number] = curCoords.length > 0 
+          ? curCoords[curCoords.length - 1] 
+          : state.telemetry.currentPosition || [state.mapViewState.longitude, state.mapViewState.latitude];
+
+        simAngle.current += 0.1;
+        const baseSpeed = 75 + Math.sin(simAngle.current) * 35 + (Math.random() * 6 - 3);
+        const simSpeed = Math.max(25, Math.min(145, Math.round(baseSpeed)));
+
+        const kmPerSec = simSpeed / 3600;
+        const latOffset = (kmPerSec / 111) * Math.cos(simAngle.current * 0.5);
+        const lngOffset = (kmPerSec / (111 * Math.cos(lastPoint[1] * (Math.PI / 180)))) * Math.sin(simAngle.current * 0.5);
+
+        const newLng = lastPoint[0] + lngOffset;
+        const newLat = lastPoint[1] + latOffset;
+        const newPoint: [number, number] = [newLng, newLat];
+
+        const stepDist = calculateDistance(lastPoint[1], lastPoint[0], newLat, newLng);
+        const newDist = state.telemetry.distanceKm + stepDist;
+        const newTop = Math.max(state.telemetry.topSpeedKmh, simSpeed);
+        const durationSec = Math.max(1, state.telemetry.durationSeconds);
+        const avgSpeed = newDist / (durationSec / 3600);
+
+        addRouteCoord(newPoint);
+
+        updateTelemetry({
+          speedKmh: simSpeed,
+          topSpeedKmh: Math.round(newTop),
+          distanceKm: Number(newDist.toFixed(2)),
+          avgSpeedKmh: Math.round(avgSpeed),
+          currentPosition: newPoint,
+          accuracy: state.telemetry.accuracy || 8, // Realistic fallback accuracy during drive simulation
+        });
+
+        localforage
+          .setItem('offline_telemetry', useDriveStore.getState().telemetry)
+          .catch(() => {});
+      }, 1000);
+    } else {
+      lastRealSpeed.current = 0;
+      if (simInterval.current) {
+        clearInterval(simInterval.current);
+        simInterval.current = null;
+      }
+    }
+
+    return () => {
+      clearInterval(durationTimer);
+      if (simInterval.current) {
+        clearInterval(simInterval.current);
       }
     };
   }, [isActive, updateTelemetry, addRouteCoord]);

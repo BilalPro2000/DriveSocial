@@ -218,7 +218,7 @@ export function MediaPlayerWidget() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative pointer-events-auto">
       {/* COMPACT FLOATING HUD PILL */}
       {!isExpanded ? (
         <motion.div

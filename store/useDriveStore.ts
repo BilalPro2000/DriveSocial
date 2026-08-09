@@ -7,6 +7,9 @@ interface TelemetryData {
   distanceKm: number;
   durationSeconds: number;
   routeCoords: [number, number][]; // [longitude, latitude]
+  accuracy: number | null; // accuracy in meters
+  currentPosition: [number, number] | null; // [longitude, latitude]
+  isLowAccuracy: boolean;
 }
 
 interface MapSettings {
@@ -64,6 +67,9 @@ export const useDriveStore = create<DriveState>((set) => ({
     distanceKm: 0,
     durationSeconds: 0,
     routeCoords: [],
+    accuracy: null,
+    currentPosition: null,
+    isLowAccuracy: false,
   },
   mapSettings: {
     baseStyle: 'dark',
@@ -84,18 +90,19 @@ export const useDriveStore = create<DriveState>((set) => ({
     bearing: 0,
   },
   startDrive: (mode) =>
-    set({
+    set((state) => ({
       isActive: true,
       driveMode: mode || 'Casual Cruise',
       telemetry: {
+        ...state.telemetry,
         speedKmh: 0,
         topSpeedKmh: 0,
         avgSpeedKmh: 0,
         distanceKm: 0,
         durationSeconds: 0,
-        routeCoords: [],
+        routeCoords: state.telemetry.currentPosition ? [state.telemetry.currentPosition] : [],
       },
-    }),
+    })),
   finishDrive: () => set({ isActive: false }),
   updateTelemetry: (data) =>
     set((state) => ({ telemetry: { ...state.telemetry, ...data } })),

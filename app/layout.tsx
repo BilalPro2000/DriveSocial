@@ -45,9 +45,7 @@ export default function RootLayout({
         <main className="relative z-10 h-[100dvh] w-full overflow-y-auto pb-16 pointer-events-none [&>*]:pointer-events-auto">
           {children}
         </main>
-        <div className="relative z-20 pointer-events-auto">
-          <BottomNav />
-        </div>
+        <BottomNav />
       </body>
     </html>
   );

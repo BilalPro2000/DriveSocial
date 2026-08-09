@@ -207,6 +207,7 @@ export default function ConvoysPage() {
             <div className="relative z-10 flex flex-col gap-2">
               {/* You */}
               <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-2 backdrop-blur-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="You" className="w-10 h-10 rounded-full border-2 border-[#FF3B30]" />
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
@@ -219,6 +220,7 @@ export default function ConvoysPage() {
               
               {/* Other Driver 1 */}
               <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-2 backdrop-blur-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150" alt="Elena" className="w-10 h-10 rounded-full border-2 border-emerald-400" />
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
@@ -231,6 +233,7 @@ export default function ConvoysPage() {
               
               {/* Other Driver 2 */}
               <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-2 backdrop-blur-md opacity-80">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Marcus" className="w-10 h-10 rounded-full border-2 border-blue-400" />
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
@@ -329,6 +332,7 @@ export default function ConvoysPage() {
             ) : (
               messages.map((m) => (
                 <div key={m.id} className="flex gap-2.5 items-start">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={m.user_avatar} alt={m.user_name} className="w-7 h-7 rounded-full object-cover border border-white/10" />
                   <div className="bg-white/5 border border-white/10 rounded-2xl p-2.5 max-w-[80%]">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -367,8 +371,14 @@ export default function ConvoysPage() {
 
       {/* CREATE SQUAD MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4">
+        <div 
+          onClick={() => setShowCreateModal(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4 cursor-default"
+          >
             <h3 className="text-base font-bold text-white">Create New Squad</h3>
             <input
               type="text"
@@ -380,13 +390,13 @@ export default function ConvoysPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 h-11 bg-white/5 rounded-xl text-xs text-gray-300"
+                className="flex-1 h-11 bg-white/5 hover:bg-white/10 active:scale-95 transition-all rounded-xl text-xs text-gray-300 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateSquad}
-                className="flex-1 h-11 bg-[#FF3B30] rounded-xl text-xs font-bold text-white"
+                className="flex-1 h-11 bg-[#FF3B30] hover:bg-[#ff5247] active:scale-95 transition-all rounded-xl text-xs font-bold text-white cursor-pointer"
               >
                 Create
               </button>
@@ -397,8 +407,14 @@ export default function ConvoysPage() {
 
       {/* JOIN SQUAD MODAL */}
       {showJoinModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4">
+        <div 
+          onClick={() => setShowJoinModal(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4 cursor-default"
+          >
             <h3 className="text-base font-bold text-white">Join Squad via Invite Code</h3>
             <input
               type="text"
@@ -410,13 +426,13 @@ export default function ConvoysPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowJoinModal(false)}
-                className="flex-1 h-11 bg-white/5 rounded-xl text-xs text-gray-300"
+                className="flex-1 h-11 bg-white/5 hover:bg-white/10 active:scale-95 transition-all rounded-xl text-xs text-gray-300 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleJoinSquad}
-                className="flex-1 h-11 bg-[#FF3B30] rounded-xl text-xs font-bold text-white"
+                className="flex-1 h-11 bg-[#FF3B30] hover:bg-[#ff5247] active:scale-95 transition-all rounded-xl text-xs font-bold text-white cursor-pointer"
               >
                 Join Squad
               </button>

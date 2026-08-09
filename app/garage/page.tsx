@@ -220,6 +220,7 @@ export default function GaragePage() {
               {/* Digital Car Card */}
               <div className="w-full rounded-2xl overflow-hidden border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.05)] relative group bg-gradient-to-br from-gray-900 to-black">
                 <div className="h-56 relative overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedVehicle.photos[0] || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800'}
                     alt={selectedVehicle.model}
@@ -462,13 +463,15 @@ export default function GaragePage() {
                   <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/10">
                     {/* Photos */}
                     <div className="h-24 rounded-xl overflow-hidden border border-white/10 relative">
-                      <img src={compareV1.photos[0]} className="w-full h-full object-cover" alt="" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={compareV1.photos[0]} className="w-full h-full object-cover" alt={compareV1.model} />
                       <div className="absolute inset-0 bg-black/40 flex items-end p-2">
                         <span className="text-xs font-bold text-white leading-tight">{compareV1.make}<br/>{compareV1.model}</span>
                       </div>
                     </div>
                     <div className="h-24 rounded-xl overflow-hidden border border-white/10 relative">
-                      <img src={compareV2.photos[0]} className="w-full h-full object-cover" alt="" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={compareV2.photos[0]} className="w-full h-full object-cover" alt={compareV2.model} />
                       <div className="absolute inset-0 bg-black/40 flex items-end p-2">
                         <span className="text-xs font-bold text-white leading-tight">{compareV2.make}<br/>{compareV2.model}</span>
                       </div>
@@ -523,8 +526,14 @@ export default function GaragePage() {
 
       {/* ADD VEHICLE MODAL */}
       {showAddVehicleModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+        <div 
+          onClick={() => setShowAddVehicleModal(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-[#0B0F17] border border-white/10 rounded-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto cursor-default"
+          >
             <div className="flex justify-between items-center pb-2 border-b border-white/10">
               <h3 className="text-base font-bold text-white">Add Vehicle to Garage</h3>
               <button onClick={() => setShowAddVehicleModal(false)} className="text-gray-400 hover:text-white">

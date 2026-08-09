@@ -13,8 +13,12 @@ export function MapSettingsDrawer({ onClose }: MapSettingsDrawerProps) {
   const updateMapSettings = useDriveStore((state) => state.updateMapSettings);
 
   return (
-    <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end pointer-events-auto"
+    >
       <motion.div
+        onClick={(e) => e.stopPropagation()}
         initial={{ x: 300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 300, opacity: 0 }}
@@ -24,7 +28,7 @@ export function MapSettingsDrawer({ onClose }: MapSettingsDrawerProps) {
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-[#FF3B30]" /> Map Layers
           </h2>
-          <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400">
+          <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
             <X className="w-4 h-4" />
           </button>
         </div>
